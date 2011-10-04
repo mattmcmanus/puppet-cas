@@ -1,18 +1,42 @@
 class cas {
+  # Create a cas user account
+  $cas_user = "cas"
+  $cas_home = "/home/$cas_user"
+  
+  users::account{ $cas_user:
+    ensure => present,
+    fullname => "Centralized Authentication System"
+  }
   
   # Ensure that the Ubuntu partner sources are available
   # note: assuming ubuntu 11.04 for now
   apt::sources_list {
     "partner":
       ensure  => present,
-      content => "deb http://archive.ubuntu.com/ubuntu/ natty partner";
-    "partner-src":
-      ensure => present,
-      content => "deb-src http://archive.ubuntu.com/ubuntu/ natty partner"
+      content => "deb http://archive.canonical.com/ubuntu natty partner\ndeb-src http://archive.canonical.com/ubuntu natty partner";
   }
   
-  package {
-    ['sun-java6-jdk', 'tomcat', 'maven2', 'ant', 'maven-ant-helper']: ensure => present
+  # Install java for the servers
+  # - Thanks to: http://www.mogilowski.net/lang/en-us/2011/07/27/install-sun-java-with-puppet-on-ubuntu/
+  file { "/var/cache/debconf/sun-java6.preseed":
+    source => "puppet:///modules/cas/sun-java6.preseed",
+    ensure => present
   }
   
+  package { ["sun-java6-jdk", "sun-java6-jre"]:
+    ensure  => present,
+    responsefile => "/var/cache/debconf/sun-java6.preseed",
+    require => [ Apt::Sources_list["partner"], File["/var/cache/debconf/sun-java6.preseed"] ],
+    notify => Exec["update-alternatives"]
+  }
+  
+  exec {"update-alternatives":
+    command => "update-java-alternatives -s java-6-sun",
+    require => Package["sun-java6-jdk"],
+    refreshonly => true
+  }
+  
+  $JAVA_HOME = "/usr/lib/jvm/java-6-sun"
+  
+  include cas::tomcat
 }
