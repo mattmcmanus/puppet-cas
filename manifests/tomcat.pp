@@ -2,7 +2,6 @@
 
 class cas::tomcat {
   
-  
   #                        Variables
   # = = = = = = = = = = = = = = = = = = = = = = = = = = = 
   if !$tomcat_password {
@@ -42,7 +41,16 @@ class cas::tomcat {
       owner => 'root',
       require => Package['tomcat6'],
       notify => Service['tomcat6'],
-      content => template('cas/tomcat/server.xml.erb'),
+      content => template('cas/tomcat/server.xml.erb');
+    # Simplify deployements by linking to the tomcat dir in CAS home
+    "$cas_home/webapps":
+      ensure => link,
+      target => '/var/lib/tomcat6/webapps',
+      require => User[$cas_user];
+    "/var/log/cas":
+      ensure => directory,
+      owner => 'tomcat6',
+      group => 'tomcat6';
   }
   
   service { 'tomcat6':

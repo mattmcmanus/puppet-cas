@@ -1,11 +1,17 @@
 class cas {
+  # Variables
+  $cas_version = "3.4.10"
+  $cas_organization = "arcadia"
+  $cas_name = "arcadia-cas"
+  $cas_org_version = "1.0-alpha"
+
   # Create a cas user account
   $cas_user = "cas"
   $cas_home = "/home/$cas_user"
   
   users::account{ $cas_user:
     ensure => present,
-    fullname => "Centralized Authentication System"
+    fullname => $cas_name
   }
   
   # Ensure that the Ubuntu partner sources are available

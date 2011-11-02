@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0" >
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>edu.<%= cas_organization %>.cas</groupId>
+    <artifactId><%= cas_name %></artifactId>
+    <packaging>war</packaging>
+    <version><%= cas_org_version %></version>
+ 
+    <build>
+        <plugins>
+            <plugin>
+              <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                  <warName>cas</warName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+ 
+    <dependencies>
+        <dependency>
+            <groupId>org.jasig.cas</groupId>
+            <artifactId>cas-server-webapp</artifactId>
+            <version>${cas.version}</version>
+            <type>war</type>
+            <scope>runtime</scope>
+        </dependency>      
+        <dependency>
+             <groupId>org.jasig.cas</groupId>
+             <artifactId>cas-server-support-generic</artifactId>
+             <version>${cas.version}</version>
+             <type>jar</type>
+            <scope>runtime</scope>
+        </dependency>  
+        <dependency>
+             <groupId>org.jasig.cas</groupId>
+             <artifactId>cas-server-support-ldap</artifactId>
+             <version>${cas.version}</version>
+             <type>jar</type>
+             <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+ 
+    <properties>
+        <cas.version><%= cas_version %></cas.version>
+    </properties>
+ 
+        <repositories>
+             <repository>
+                  <id>ja-sig</id>
+                  <url>http://oss.sonatype.org/content/repositories/releases/</url>
+             </repository>
+        </repositories>
+</project>
