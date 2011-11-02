@@ -33,66 +33,30 @@ class cas::development inherits cas {
   
   #        Setup Maven workspace
   # ==================================================
-  $cas_workspace = "$cas_home/workspace/$cas_name"
-  $cas_src_inf = "$cas_workspace/src/main/webapp/WEB-INF"
+  $cas_workspace = "$cas_home/workspace"
   file {
     # Create the maven workspace
-    "$cas_home/workspace":
-      ensure => directory,
-      owner => $cas_user,
-      group => $cas_user,
-      require => User[$cas_user];
     $cas_workspace:
       ensure => directory,
       owner => $cas_user,
       group => $cas_user,
-      require => File["$cas_home/workspace"],
-      notify => Exec['make-src-dirs'];
-    $cas_src_inf:
-      ensure => directory,
-      owner => $cas_user,
-      group => $cas_user,
-      require => File["$cas_home/workspace"];
-    "$cas_workspace/src/main/resources":
-      ensure => directory,
-      owner => $cas_user,
-      group => $cas_user,
-      require => File[$cas_src_inf];
-    "$cas_workspace/pom.xml":
-      ensure => present,
-      content => template("cas/pom.xml.erb"),
-      require => File[$cas_workspace],
-      owner => $cas_user,
-      group => $cas_user,
-      notify => Exec["maven-clean-build"];
-    "$cas_src_inf/deployerConfigContext.xml":
-      ensure => present,
-      content => template("cas/WEB-INF/deployerConfigContext.xml.erb"),
-      require => File[$cas_src_inf],
-      owner => $cas_user,
-      group => $cas_user,
-      notify => Exec["maven-clean-build"];
-    "$cas_src_inf/classes/log4j.xml":
-      ensure => present,
-      source => 'puppet:///modules/cas/log4j.xml',
-      owner => $cas_user,
-      group => $cas_user,
-      require => Exec['make-src-dirs'];
+      require => User[$cas_user];
+  }
+
+  # Checkout Maven Repo
+  git::clone { $cas_name:
+    source => 'git@github.com:mattmcmanus/arcadia-cas-server.git',
+    localtree => $cas_workspace,
+    user => $cas_user;
   }
   
   exec { 
-    "make-src-dirs":
-      command => "mkdir -p $cas_src_inf/classes",
-      creates => "$cas_src_inf/classes",
-      user => $cas_user,
-      cwd => $cas_workspace,
-      before => File[$cas_src_inf];
     "maven-clean-build":
       command => 'mvn clean package',
       user => $cas_user,
       cwd => $cas_workspace,
       #creates => "$cas_workspace/target",
       refreshonly => true,
-      require => [File[$cas_workspace], File["$cas_workspace/pom.xml"]]
+      require => File[$cas_workspace]
   }
 }

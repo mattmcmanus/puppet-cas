@@ -2,7 +2,7 @@ class cas {
   # Variables
   $cas_version = "3.4.10"
   $cas_organization = "arcadia"
-  $cas_name = "arcadia-cas"
+  $cas_name = "arcadia-cas-server"
   $cas_org_version = "1.0-alpha"
 
   # Create a cas user account
