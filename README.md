@@ -2,6 +2,21 @@
 
 *NO WHERE CLOSE TO FINISHED*
 
+Easily setup production and development servers for CAS.
+
+**Setting up a *production* environment**: 
+
+* Installs and configures tomcat
+* Creates a CAS user
+* Automatically generates your CSR based off provided Org information and the server fqdn. 
+* **Manual Steps:** Apply the SSL cert when your done and upload your war file to the right directory
+
+**Setting up a *development* environment**: 
+
+* Installs and configures tomcat and maven. (Including automatically setting up a self signed cert)
+* Creates a CAS user
+* The development class takes a url to a git repo of your maven overlay and sets up your workspace in the cas users home
+
 ## Requirements
 
 This module depends on some other puppet modules. They are all listed below:
@@ -10,24 +25,23 @@ This module depends on some other puppet modules. They are all listed below:
 
 ## Variables
 
-* **$tomcat_password**: Password for tomcat admin user and keystore
-* **$tomcast_settings_dir**: Defaults to "/etc/tomcat6"
-* **$tomcat_keystore**: Defaults to "$tomcast_settings_dir/keystore"
-* **$tomcat_keystore_password**
-* **$cas_maven_repo**: Git repo where maven files are kept
+Interested in what variables you can set? Read the source…Sorry. This is still under heavy development
 
 ## Example Code
 
 ### Production Server
 
-    node 'cas.server.com' inherits basenode {    
-      include cas
+    node 'cas.example.com' inherits basenode {  
+      class{'cas::production':
+        ou => "GIS", o => "University", l => "City", st => "PA"
+      }
     }
 
 ### Development Server
 
-    node 'dev-server.com' inherits 'cas.server.com' {
-      $cas_maven_repo = 'git@github.com:user/repo.git'
-      
-      include cas::development
+    node 'dev-cas.example.com' inherits basenode {
+      class {'cas::development': 
+        maven_repo    => 'git@github.com:user/university-cas-server.git',
+        project_name  => 'university-cas-server'
+      }
     }
