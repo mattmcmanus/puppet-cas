@@ -1,67 +1,54 @@
-class cas::development inherits cas {
-  
-  include cas
-  include cas::tomcat
-  
-  $tomcat_keystore = "/etc/tomcat6/.keystore"
-  
+class cas::development (
+  $settings_dir   = $cas::params::tomcat_settings_dir,
+  $webapps_dir    = $cas::params::tomcat_webapps_dir,
+  $password       = $cas::params::tomcat_password,
+  $keystore       = $cas::params::tomcat_keystore,
+  $user           = $cas::params::user,
+  $user_home      = $cas::params::user_home,
+  $workspace      = $cas::params::user_workspace,
+  $project_name, 
+  $maven_repo
+) inherits cas {
+  # Install the required packages to use the maven overlay
   package { ['maven2', 'ant', 'maven-ant-helper']: 
       ensure => present
   }
   
   #        Generate self-signed keys for DEV
   # ==================================================
+  Exec['create-tomcat-keystore'] -> Exec['export-key'] -> Exec['import-key'] ~> Service['tomcat6']
   exec {
     'create-tomcat-keystore':
-      command => "keytool -genkey -dname \"cn=$fqdn, ou=Test, o=Test, l=Test, st=Test c=US\" -alias tomcat -keyalg RSA -keypass \"changeit\" -keystore $tomcat_keystore -storepass \"changeit\" -validity 365",
-      creates => $tomcat_keystore,
+      command => "keytool -genkey -dname \"cn=$fqdn, ou=Test, o=Test, l=Test, st=Test c=US\" -alias tomcat -keyalg RSA -keypass \"changeit\" -keystore $keystore -storepass \"changeit\" -validity 365",
+      creates => $keystore,
       require => Package['tomcat6'];
     'export-key':
-      command => "keytool -export -alias tomcat -keystore $tomcat_keystore -storepass \"changeit\" -file $cas_home/cas-server.crt",
-      user => $cas_user,
-      cwd => $cas_home,
-      creates => "$cas_home/cas-server.crt",
-      require => Exec['create-tomcat-keystore'];
+      command => "keytool -export -alias tomcat -keystore $keystore -storepass \"changeit\" -file $user_home/cas-server.crt",
+      user => $user,
+      cwd => $user_home,
+      creates => "$user_home/cas-server.crt",
     'import-key':
-      command => "keytool -import -file $cas_home/cas-server.crt -keystore /etc/java-6-sun/security/cacerts",
-      unless => "keytool -list -keystore /etc/java-6-sun/security/cacerts -storepass $tomcat_password -alias tomcat",
-      user => $cas_user,
-      cwd => $cas_home,
-      require => Exec['export-key'],
-      notify => Service['tomcat6'];
+      command => "keytool -import -file $user_home/cas-server.crt -storepass \"changeit\" -keystore /etc/java-6-sun/security/cacerts",
+      unless => "keytool -list -keystore /etc/java-6-sun/security/cacerts -storepass $password -alias tomcat",
+      user => $user,
+      cwd => $user_home,
   }
   
   #        Setup Maven workspace
   # ==================================================
-  $cas_workspace = "$cas_home/workspace"
-  
-  if !$cas_maven_repo {
-    fail("You need to define the varible \$cas_maven_repo! How the hell am I supposed to clone nothing?")
-  } 
-  
   file {
     # Create the maven workspace
-    $cas_workspace:
+    $workspace:
       ensure => directory,
-      owner => $cas_user,
-      group => $cas_user,
-      require => User[$cas_user];
+      owner => $user,
+      group => $user,
+      require => User[$user];
   }
 
   # Checkout Maven Repo
-  git::clone { $cas_name:
-    source => $cas_maven_repo,
-    localtree => $cas_workspace,
-    user => $cas_user;
-  }
-  
-  exec { 
-    "maven-clean-build":
-      command => 'mvn clean package',
-      user => $cas_user,
-      cwd => $cas_workspace,
-      #creates => "$cas_workspace/target",
-      refreshonly => true,
-      require => File[$cas_workspace]
+  git::clone { $project_name:
+    source => $maven_repo,
+    localtree => $workspace,
+    user => $user;
   }
 }

@@ -1,27 +1,12 @@
 # Based on work done here: https://github.com/mpdehaan/puppet-tomcat-demo/blob/master/modules/tomcat/manifests/init.pp
-
-class cas::tomcat {
-  
-  #                        Variables
-  # = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-  $tomcat_password = $tomcat_password ? {
-    "" => "changeit",
-    default => $tomcat_password
-  }
-  
-  $tomcat_settings_dir = $tomcat_settings_dir ? {
-    "" => "/etc/tomcat6",
-    default => $tomcat_settings_dir
-  }
-  
-  $tomcat_keystore = $tomcat_keystore ? {
-    "" => "$tomcat_settings_dir/keystore",
-    default => $tomcat_keystore
-  }
-  
-  if !$tomcat_keystore {
-    fail("You need to define the varible \$tomcat_password!")
-  } 
+class cas::tomcat (
+  $settings_dir  = $cas::params::tomcat_settings_dir,
+  $webapps_dir   = $cas::params::tomcat_webapps_dir,
+  $password      = $cas::params::tomcat_password,
+  $keystore      = $cas::params::tomcat_keystore,
+  $user,
+  $user_home
+) inherits cas::params {
   
   #            Packages, Services & Files
   # = = = = = = = = = = = = = = = = = = = = = = = = = = = 
@@ -33,21 +18,21 @@ class cas::tomcat {
   }
 
   file { 
-    "$tomcat_settings_dir/tomcat-users.xml":
+    "$settings_dir/tomcat-users.xml":
       owner => 'root',
       require => Package['tomcat6'],
       notify => Service['tomcat6'],
       content => template('cas/tomcat/tomcat-users.xml.erb');
-    "$tomcat_settings_dir/server.xml":
+    "$settings_dir/server.xml":
       owner => 'root',
       require => Package['tomcat6'],
       notify => Service['tomcat6'],
       content => template('cas/tomcat/server.xml.erb');
     # Simplify deployements by linking to the tomcat dir in CAS home
-    "$cas_home/webapps":
+    "$user_home/webapps":
       ensure => link,
-      target => '/var/lib/tomcat6/webapps',
-      require => User[$cas_user];
+      target => $webapps_dir,
+      require => User[$user];
     "/var/log/cas":
       ensure => directory,
       owner => 'tomcat6',
@@ -57,8 +42,7 @@ class cas::tomcat {
   service { 'tomcat6':
     ensure => running,
     require => Package['tomcat6'],
-  } 
-  
+  }
   
 }
 

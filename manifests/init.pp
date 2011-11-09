@@ -1,17 +1,12 @@
-class cas {
-  # Variables
-  $cas_version = "3.4.10"
-  $cas_organization = "arcadia"
-  $cas_name = "arcadia-cas-server"
-  $cas_org_version = "1.0-alpha"
-
-  # Create a cas user account
-  $cas_user = "cas"
-  $cas_home = "/home/$cas_user"
+class cas (
+  $user      = $cas::params::user,
+  $user_home = $cas::params::user_home
+) inherits cas::params {
   
-  users::account{ $cas_user:
+  # Custom user class. May need to change.
+  users::account{ $user:
     ensure => present,
-    fullname => $cas_name
+    fullname => $user_home
   }
   
   # Ensure that the Ubuntu partner sources are available
@@ -42,8 +37,6 @@ class cas {
     refreshonly => true
   }
   
-  $JAVA_HOME = "/usr/lib/jvm/java-6-sun"
-  
-  $tomcat_keystore = "/etc/tomcat6/.keystore"
-  include cas::tomcat
+  # Setup Tomcat
+  class{'cas::tomcat': user => $user, user_home => $user_home}
 }
