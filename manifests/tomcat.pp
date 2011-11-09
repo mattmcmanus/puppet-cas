@@ -4,9 +4,10 @@ class cas::tomcat {
   
   #                        Variables
   # = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-  if !$tomcat_password {
-    fail("You need to define the varible \$tomcat_password!")
-  } 
+  $tomcat_password = $tomcat_password ? {
+    "" => "changeit",
+    default => $tomcat_password
+  }
   
   $tomcat_settings_dir = $tomcat_settings_dir ? {
     "" => "/etc/tomcat6",

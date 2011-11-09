@@ -44,5 +44,6 @@ class cas {
   
   $JAVA_HOME = "/usr/lib/jvm/java-6-sun"
   
+  $tomcat_keystore = "/etc/tomcat6/.keystore"
   include cas::tomcat
 }

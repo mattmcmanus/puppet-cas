@@ -83,17 +83,15 @@
          described in the APR documentation -->
 
     <Connector 
-      port="8443" 
-      protocol="HTTP/1.1" 
-      SSLEnabled="true"
-      maxThreads="150" 
-      scheme="https" 
-      secure="true"
+      port="8443" minSpareThreads="5" maxSpareThreads="75"
+      enableLookups="true" disableUploadTimeout="true" 
+      acceptCount="100"  maxThreads="200"
+      scheme="https" secure="true" SSLEnabled="true"
       clientAuth="false" 
       sslProtocol="TLS"
-      keystoreFile="<%= tomcat_keystore %>"
-      keystorePass="<%= tomcat_password %>" />
-
+      keystoreFile="/etc/tomcat6/.keystore"       
+      keystorePass="changeit"
+      keyAlias="tomcat" />
 
     <!-- Define an AJP 1.3 Connector on port 8009 -->
     <!--
