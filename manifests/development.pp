@@ -26,12 +26,12 @@ class cas::development (
       command => "keytool -export -alias tomcat -keystore $keystore -storepass \"changeit\" -file $user_home/cas-server.crt",
       user => $user,
       cwd => $user_home,
-      creates => "$user_home/cas-server.crt",
+      creates => "$user_home/cas-server.crt";
     'import-key':
       command => "keytool -import -file $user_home/cas-server.crt -storepass \"changeit\" -keystore /etc/java-6-sun/security/cacerts",
       unless => "keytool -list -keystore /etc/java-6-sun/security/cacerts -storepass $password -alias tomcat",
       user => $user,
-      cwd => $user_home,
+      cwd => $user_home;
   }
   
   #        Setup Maven workspace
