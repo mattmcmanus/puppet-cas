@@ -39,6 +39,12 @@ class cas::tomcat (
       group => 'tomcat6';
   }
   
+  augeas { "default/tomcat6/AUTHBIND":
+    context => "/files/etc/default/tomcat6",
+    changes => "set AUTHBIND yes",
+    notify  => Service["tomcat6"];
+  }
+  
   service { 'tomcat6':
     ensure => running,
     require => Package['tomcat6'],
