@@ -14,9 +14,9 @@ class cas::tomcat (
     ['tomcat6', 'tomcat6-admin', 'tomcat6-user']:
       ensure => installed;
     'apache2':
-      ensure => absent;
+      ensure => purged;
   }
-
+  
   file { 
     "$settings_dir/tomcat-users.xml":
       owner => 'root',
@@ -45,9 +45,12 @@ class cas::tomcat (
     notify  => Service["tomcat6"];
   }
   
-  service { 'tomcat6':
-    ensure => running,
-    require => Package['tomcat6'],
+  service { 
+    'tomcat6':
+      ensure => running,
+      require => Package['tomcat6'];
+    'apache2':
+      ensure => stopped
   }
   
 }

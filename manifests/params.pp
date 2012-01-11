@@ -3,8 +3,10 @@ class cas::params {
   $user = "cas"
   $user_home = "/home/$user"
   $user_workspace = "$user_home/workspace"
-  #     Tomcat Settings
-  #==========================
+  
+  # ----------------------------------------------------
+  #          Tomcat Settings
+  # ----------------------------------------------------
   $tomcat_password = "changeit"
   
   $tomcat_settings_dir = $operatingsystem ? {
@@ -18,4 +20,12 @@ class cas::params {
     /(?i-mx:ubuntu|debian)/ => "/var/lib/tomcat6/webapps",
     default => $tomcat_webapps_dir
   }
+  
+  # ----------------------------------------------------
+  #          Keystore Settings
+  # ----------------------------------------------------
+  $ou = "TEST"
+  $o = "TEST"
+  $l = "TEST"
+  $st = "TEST"
 }
