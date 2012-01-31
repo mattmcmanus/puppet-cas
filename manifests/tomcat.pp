@@ -39,10 +39,15 @@ class cas::tomcat (
       group => 'tomcat6';
   }
   
-  augeas { "default/tomcat6/AUTHBIND":
-    context => "/files/etc/default/tomcat6",
-    changes => "set AUTHBIND yes",
-    notify  => Service["tomcat6"];
+  augeas { 
+    "default/tomcat6/AUTHBIND":
+      context => "/files/etc/default/tomcat6",
+      changes => "set AUTHBIND yes",
+      notify  => Service["tomcat6"];
+    "default/tomcat6/JAVA_HOME":
+      context => "/files/etc/default/tomcat6",
+      changes => "set JAVA_HOME /usr/lib/jvm/java-6-sun",
+      notify  => Service["tomcat6"];
   }
   
   service { 
