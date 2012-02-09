@@ -11,8 +11,7 @@ class cas (
   $l              = $cas::params::l,
   $st             = $cas::params::st,
   $workspace      = $cas::params::user_workspace,
-  $maven_repo,
-  $project_name
+  $maven_repo     = undef
 ) inherits cas::params {
   
   # Custom user class. May need to change.
@@ -57,24 +56,25 @@ class cas (
   #          Install and configure Maven
   # ----------------------------------------------------
   # Install the required packages to use the maven overlay
-  package { ['maven2', 'ant', 'maven-ant-helper']: ensure => present }
-  file {
-    # Create the maven workspace
-    $workspace:
-      ensure => directory,
-      owner => $user,
-      group => $user,
-      require => User[$user];
-  }
-
-  # Checkout Maven Repo
-  git::clone { $project_name:
-    source => $maven_repo,
-    localtree => $workspace,
-    user => $user,
-    require => File[$workspace];
-  }
+  if $maven_repo != undef {
+    package { ['maven2', 'ant', 'maven-ant-helper']: ensure => present }
+    file {
+      # Create the maven workspace
+      $workspace:
+        ensure => directory,
+        owner => $user,
+        group => $user,
+        require => User[$user];
+    }
   
+    # Checkout Maven Repo
+    git::clone { $maven_repo:
+      source => $maven_repo,
+      localtree => $workspace,
+      user => $user,
+      require => File[$workspace];
+    }
+  }
   
   # ----------------------------------------------------
   #          Install and configure Tomcat
